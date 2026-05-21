@@ -1,638 +1,947 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>APEX — Productivity Dashboard</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0F1115; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #1A1D24; }
-  ::-webkit-scrollbar-thumb { background: #2B313D; border-radius: 3px; }
-  input[type=range] { -webkit-appearance: none; height: 4px; border-radius: 2px; background: #2B313D; outline: none; }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; cursor: pointer; }
-  input, textarea, select { font-family: inherit; }
-  button { font-family: inherit; cursor: pointer; }
+:root{
+  --bg:#0F1115;--s1:#1A1D24;--s2:#2B313D;
+  --accent:#4F8CFF;--ag:rgba(79,140,255,0.22);
+  --text:#E5E7EB;--muted:#94A3B8;
+  --border:rgba(79,140,255,0.1);--borderhi:rgba(79,140,255,0.3);
+  --success:#10B981;--warn:#F59E0B;--danger:#EF4444;
+  --purple:#8B5CF6;--pink:#EC4899;
+  --r:14px;--rs:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--s2);border-radius:4px}
+input,textarea,select{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 13px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ag)}
+input[type=range]{background:transparent;border:none;box-shadow:none;padding:0;cursor:pointer}
+input[type=range]:focus{box-shadow:none;border:none}
+input[type=number]{width:34px;padding:2px 4px;font-size:13px;background:transparent;border:none;box-shadow:none;text-align:center}
+input[type=number]:focus{box-shadow:none}
+textarea{resize:vertical;line-height:1.6}
+select{cursor:pointer}
+button{font-family:inherit;cursor:pointer;border:none;transition:all .2s}
+
+/* Ambient blobs */
+.ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.07}
+.b1{width:500px;height:500px;background:#4F8CFF;top:-150px;right:-100px;animation:drift 20s ease-in-out infinite}
+.b2{width:350px;height:350px;background:#8B5CF6;bottom:50px;left:-80px;animation:drift 25s ease-in-out infinite reverse}
+.b3{width:250px;height:250px;background:#10B981;top:40%;right:15%;animation:drift 18s ease-in-out infinite 5s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,20px)}}
+
+/* Navbar */
+.navbar{background:rgba(15,17,21,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:62px;gap:12px}
+.nav-logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#4F8CFF,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;box-shadow:0 0 16px var(--ag)}
+.logo-text{font-size:16px;font-weight:900;letter-spacing:-.03em;color:var(--text)}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-left:2px}
+.nav-tabs{display:flex;gap:4px}
+.tab-btn{background:transparent;border:1px solid var(--border);border-radius:var(--rs);padding:7px 18px;color:var(--muted);font-size:13px;font-weight:500;letter-spacing:.01em}
+.tab-btn:hover{color:var(--text);border-color:var(--borderhi)}
+.tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;box-shadow:0 0 20px var(--ag)}
+.nav-right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.nav-time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#4F8CFF,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;box-shadow:0 0 14px var(--ag);cursor:pointer}
+
+/* Main */
+.main{max-width:1200px;margin:0 auto;padding:28px 24px 0;position:relative;z-index:1}
+
+/* Tabs */
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Card */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;transition:border-color .25s;margin-bottom:16px}
+.card:hover{border-color:var(--borderhi)}
+.card-lbl{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.card-ttl{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.02em;margin-bottom:0}
+.card-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-meta{font-size:12px;color:var(--muted)}
+
+/* Grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+
+/* Dashboard header */
+.dash-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px}
+.date-lbl{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.greet{font-size:30px;font-weight:900;letter-spacing:-.04em;background:linear-gradient(90deg,var(--text) 55%,#4F8CFF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:6px}
+.tagline{font-size:13px;color:var(--muted)}
+.score-card{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,rgba(79,140,255,.12),rgba(139,92,246,.08));border:1px solid var(--borderhi);border-radius:var(--r);padding:20px 26px;box-shadow:0 0 40px rgba(79,140,255,.06)}
+.score-ring-wrap{position:relative;width:86px;height:86px}
+.score-lbl{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:900;color:var(--text)}
+.score-info .cap{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.score-info .ttl{font-size:17px;font-weight:700;color:var(--text);margin:2px 0}
+.score-info .status{font-size:12px;font-weight:600;margin-top:2px}
+
+/* Stat cards */
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s;cursor:default}
+.stat-card:hover{transform:translateY(-3px);border-color:var(--borderhi);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.stat-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.1}
+.stat-body{display:flex;align-items:flex-start;justify-content:space-between;position:relative}
+.stat-lbl{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.stat-val{font-size:30px;font-weight:900;letter-spacing:-.04em;margin-top:4px;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.stat-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px}
+
+/* SVG rings */
+.ring-bg{fill:none;stroke:var(--s2);stroke-width:7}
+.ring-fill{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-box:fill-box;transform-origin:center;transition:stroke-dasharray .5s ease}
+
+/* Weekly chart */
+.chart-wrap{margin-top:14px}
+.chart-legend{display:flex;gap:16px;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.legend-dot{width:10px;height:3px;border-radius:2px}
+
+/* Pie sliders */
+.pie-row{display:flex;align-items:center;gap:8px}
+.pie-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pie-lbl{font-size:12px;color:var(--muted);min-width:82px}
+.pie-val{font-size:12px;font-weight:700;color:var(--text);min-width:28px;text-align:right}
+
+/* Schedule bar */
+.sched-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-top:14px;scrollbar-width:thin}
+.sched-blk{border-radius:10px;padding:10px 10px;overflow:hidden;flex-shrink:0}
+.sched-t{font-size:10px;font-weight:700;letter-spacing:.06em}
+.sched-n{font-size:11px;color:var(--text);font-weight:500;margin-top:3px;line-height:1.3}
+
+/* Pomodoro */
+.col-center{display:flex;flex-direction:column;align-items:center;text-align:center}
+.pom-mode{font-size:12px;font-weight:700;letter-spacing:.14em;margin:10px 0 20px}
+.pom-ring{position:relative;width:200px;height:200px;margin-bottom:22px}
+.pom-time{font-size:46px;font-weight:900;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--text)}
+.pom-sess{font-size:12px;color:var(--muted);margin-top:4px}
+.pom-time-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.pom-btns{display:flex;gap:10px;margin-bottom:16px}
+.pom-presets{display:flex;gap:8px;margin-bottom:18px}
+.pom-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:18px;margin-bottom:8px}
+.pom-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--ag)}
+.pom-stat{font-size:12px;color:var(--muted)}
+
+/* Buttons */
+.btn{border-radius:var(--rs);padding:9px 20px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.btn-accent{background:var(--accent);border:1px solid var(--accent);color:#fff}
+.btn-accent:hover{background:#3c7eef;box-shadow:0 0 20px var(--ag)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--borderhi);color:var(--text)}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid #EF4444;color:#EF4444}
+
+/* Habits */
+.hab-hdr{display:flex;align-items:center;margin-bottom:10px}
+.hab-row{display:flex;align-items:center;margin-bottom:10px}
+.hab-name-col{width:115px;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.hab-day-h{flex:1;text-align:center;font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.hab-ico{font-size:16px}
+.hab-name{font-size:12px;color:var(--text);font-weight:500}
+.hab-cell-w{flex:1;display:flex;justify-content:center}
+.hab-cell{width:26px;height:26px;border-radius:7px;background:var(--s2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;transition:all .15s;user-select:none}
+.hab-cell.done{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px var(--ag)}
+.hab-cell:not(.done):hover{border-color:var(--accent)}
+
+/* Progress */
+.prog-bar{height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* Courses */
+.course-item{margin-bottom:18px}
+.course-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.course-name{font-size:13px;font-weight:600;color:var(--text)}
+.course-code{font-size:11px;color:var(--muted)}
+.course-right{display:flex;align-items:center;gap:8px}
+.course-pct{font-size:14px;font-weight:800;min-width:36px;text-align:right}
+
+/* Goals */
+.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.goal-item{display:flex;flex-direction:column;align-items:center;gap:7px}
+.goal-ring-wrap{position:relative;width:90px;height:90px}
+.goal-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:19px;font-weight:900}
+.goal-name{font-size:12px;font-weight:600;color:var(--text);text-align:center}
+.goal-cur{font-size:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:3px}
+
+/* Tasks */
+.task-add-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.task-add-row input{flex:1;min-width:160px}
+.task-add-row select{width:105px}
+.task-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;transition:opacity .2s}
+.task-item.done{opacity:.5}
+.task-chk{width:20px;height:20px;border-radius:6px;background:transparent;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0;transition:all .15s}
+.task-chk.checked{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--ag)}
+.task-txt{flex:1;font-size:13px;color:var(--text)}
+.task-item.done .task-txt{text-decoration:line-through;color:var(--muted)}
+.task-badge{font-size:10px;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;flex-shrink:0}
+.task-del{background:transparent;border:none;color:var(--muted);padding:0;font-size:15px;display:flex;align-items:center;transition:color .2s}
+.task-del:hover{color:var(--danger)}
+
+/* Schedule list */
+.sched-item{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:var(--rs);margin-bottom:8px}
+.sched-item-t{font-size:12px;font-weight:700;min-width:50px}
+.sched-item-body{flex:1}
+.sched-item-name{font-size:13px;color:var(--text);font-weight:500}
+.sched-item-dur{font-size:11px;color:var(--muted)}
+.sched-badge{font-size:10px;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;flex-shrink:0}
+
+/* Profile */
+.profile-hdr{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.profile-av{width:66px;height:66px;border-radius:18px;background:linear-gradient(135deg,#4F8CFF,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 0 22px var(--ag)}
+.profile-fields{flex:1}
+.field-grp{margin-bottom:14px}
+.field-lbl{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+
+/* Mini stats */
+.mini-g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.mini-stat{background:var(--s2);border-radius:var(--rs);padding:10px 12px;border:1px solid var(--border)}
+.mini-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.mini-val{font-size:22px;font-weight:900}
+
+/* Heatmap */
+.heatmap{display:flex;flex-wrap:wrap;gap:3px;margin-top:14px}
+.heat-cell{width:14px;height:14px;border-radius:3px;background:var(--accent);cursor:default;transition:opacity .2s}
+.heat-cell:hover{opacity:1 !important;outline:1px solid var(--accent)}
+.heat-legend{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--muted)}
+.legend-wrap{display:flex;gap:3px}
+
+/* Footer */
+.footer{max-width:1200px;margin:28px auto 0;padding:16px 24px 32px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);font-size:11px;color:var(--muted);position:relative;z-index:1}
+.footer-status{display:flex;align-items:center;gap:7px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
+
+/* Responsive */
+@media(max-width:900px){.g2{grid-template-columns:1fr}}
+@media(max-width:700px){
+  .nav-inner{flex-wrap:wrap;height:auto;padding:12px 16px;gap:8px}
+  .nav-tabs{gap:3px}
+  .tab-btn{padding:6px 12px;font-size:12px}
+  .greet{font-size:22px}
+  .main{padding:16px 14px 0}
+  .g4{grid-template-columns:1fr 1fr}
+  .goals-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.g4{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div id="root"></div>
 
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<!-- Ambient bg -->
+<div class="ambient">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
 
-<script type="text/babel">
-const { useState, useEffect, useRef } = React;
-const { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip,
-        ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis } = Recharts;
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="logo-icon"><i class="ti ti-bolt"></i></div>
+      <div>
+        <span class="logo-text">APEX</span>
+        <div class="logo-sub">Productivity OS</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab(0)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+      <button class="tab-btn" onclick="showTab(1)"><i class="ti ti-clock-play"></i> Focus</button>
+      <button class="tab-btn" onclick="showTab(2)"><i class="ti ti-chart-bar"></i> Progress</button>
+      <button class="tab-btn" onclick="showTab(3)"><i class="ti ti-user-circle"></i> Workspace</button>
+    </div>
+    <div class="nav-right">
+      <span id="nav-time" class="nav-time">--:--</span>
+      <div id="nav-av" class="nav-avatar">AM</div>
+    </div>
+  </div>
+</nav>
 
-const C = {
-  bg:"#0F1115", s1:"#1A1D24", s2:"#2B313D",
-  accent:"#4F8CFF", text:"#E5E7EB", muted:"#94A3B8",
-  border:"rgba(79,140,255,0.1)", borderHi:"rgba(79,140,255,0.28)",
-  success:"#10B981", warn:"#F59E0B", danger:"#EF4444",
-  purple:"#8B5CF6", pink:"#EC4899",
-};
+<main class="main">
 
-const card = (extra={}) => ({
-  background:C.s1, border:`1px solid ${C.border}`,
-  borderRadius:14, padding:"18px 20px", ...extra
-});
+  <!-- ===== TAB 0: DASHBOARD ===== -->
+  <div class="tab-panel active" id="panel-0">
+    <!-- Header -->
+    <div class="dash-hdr">
+      <div>
+        <div class="date-lbl" id="date-lbl"></div>
+        <div class="greet" id="greet-txt"></div>
+        <div class="tagline" id="tagline-txt"></div>
+      </div>
+      <div class="score-card">
+        <div class="score-ring-wrap">
+          <svg width="86" height="86" viewBox="0 0 86 86">
+            <circle class="ring-bg" cx="43" cy="43" r="36"/>
+            <circle class="ring-fill" id="score-fill" cx="43" cy="43" r="36" stroke="#4F8CFF" stroke-dasharray="0 226.2"/>
+          </svg>
+          <div class="score-lbl" id="score-lbl">0</div>
+        </div>
+        <div class="score-info">
+          <div class="cap">Productivity</div>
+          <div class="ttl">Score</div>
+          <div class="status" id="score-status"></div>
+        </div>
+      </div>
+    </div>
 
-const inputStyle = {
-  background:C.s2, border:`1px solid ${C.border}`, borderRadius:10,
-  padding:"9px 14px", color:C.text, fontSize:13, outline:"none", width:"100%",
-};
+    <!-- Stats -->
+    <div class="g4" id="stats-grid"></div>
 
-function storeLoad(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
-}
-function storeSave(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
+    <!-- Charts row -->
+    <div class="g2">
+      <div class="card">
+        <div class="card-lbl">Weekly Performance</div>
+        <div class="card-ttl">Study Hours &amp; Score</div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#4F8CFF"></span>Study hrs</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#8B5CF6"></span>Score</span>
+        </div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-weekly"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-lbl">Time Ratio</div>
+        <div class="card-ttl" style="margin-bottom:10px">Weekly Hours</div>
+        <div style="height:145px"><canvas id="chart-pie"></canvas></div>
+        <div id="pie-sliders" style="margin-top:12px;display:flex;flex-direction:column;gap:9px"></div>
+      </div>
+    </div>
 
-const DEFAULT_HABITS = [
-  { id:1, name:"Deep Work",   icon:"⚡", days:Array(7).fill(false) },
-  { id:2, name:"Exercise",    icon:"🔥", days:Array(7).fill(false) },
-  { id:3, name:"Reading",     icon:"📖", days:Array(7).fill(false) },
-  { id:4, name:"Meditation",  icon:"🧘", days:Array(7).fill(false) },
-  { id:5, name:"No Socials",  icon:"🚫", days:Array(7).fill(false) },
-  { id:6, name:"Cold Shower", icon:"❄️", days:Array(7).fill(false) },
-];
-const DEFAULT_COURSES = [
-  { id:1, name:"International Business", code:"BUS 401", progress:65, color:C.accent  },
-  { id:2, name:"Corporate Finance",      code:"FIN 301", progress:48, color:C.purple  },
-  { id:3, name:"Strategic Management",   code:"MGT 450", progress:72, color:C.success },
-  { id:4, name:"Business Analytics",     code:"BAN 305", progress:38, color:C.warn    },
-  { id:5, name:"Marketing Strategy",     code:"MKT 320", progress:55, color:C.pink    },
-];
-const DEFAULT_GOALS = [
-  { id:1, name:"GPA",             current:3.5, max:4.0 },
-  { id:2, name:"Internship Apps", current:12,  max:20  },
-  { id:3, name:"Study Hrs/Wk",    current:28,  max:40  },
-  { id:4, name:"Network Events",  current:6,   max:10  },
-];
-const DEFAULT_TASKS = [
-  { id:1, text:"BUS 401 — Case study analysis",  priority:"high",   done:false },
-  { id:2, text:"FIN 301 — Review Ch.5 formulas", priority:"high",   done:false },
-  { id:3, text:"MGT 450 — Submit group project",  priority:"medium", done:false },
-  { id:4, text:"Update LinkedIn with new skills", priority:"low",    done:true  },
-  { id:5, text:"Prepare internship portfolio",    priority:"medium", done:false },
-];
-const DEFAULT_PROFILE = {
-  name:"Alex Monroe",
-  tagline:"Future Business Leader · Strategy & Finance",
-  bio:"BBA '26 · Building skills that matter · Focused on international markets.",
-  links:["linkedin.com/in/alexmonroe","github.com/alexmonroe"]
-};
-const DEFAULT_TIME = { study:28, entertainment:8, exercise:4, social:5 };
+    <!-- Schedule bar -->
+    <div class="card">
+      <div class="card-lbl">Daily Schedule</div>
+      <div class="card-ttl">Today's Timeline</div>
+      <div class="sched-bar" id="sched-bar"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 1: FOCUS ===== -->
+  <div class="tab-panel" id="panel-1">
+    <div class="g2">
+
+      <!-- Pomodoro -->
+      <div class="card col-center">
+        <div class="card-lbl" style="text-align:center">Pomodoro Timer</div>
+        <div class="pom-mode" id="pom-mode-lbl">FOCUS SESSION</div>
+        <div class="pom-ring">
+          <svg width="200" height="200" viewBox="0 0 200 200">
+            <circle class="ring-bg" cx="100" cy="100" r="88" stroke-width="9"/>
+            <circle class="ring-fill" id="pom-fill" cx="100" cy="100" r="88" stroke="#4F8CFF" stroke-width="9" stroke-dasharray="0 552.9"/>
+          </svg>
+          <div class="pom-time-center">
+            <div class="pom-time" id="pom-time">25:00</div>
+            <div class="pom-sess" id="pom-sess">Session 1</div>
+          </div>
+        </div>
+        <div class="pom-btns">
+          <button class="btn btn-accent" id="pom-btn" onclick="togglePom()">▶&nbsp;Start</button>
+          <button class="btn btn-ghost" onclick="resetPom()">Reset</button>
+        </div>
+        <div class="pom-presets">
+          <button class="btn btn-ghost" onclick="setPomPreset(25)" style="padding:6px 14px;font-size:12px">25m</button>
+          <button class="btn btn-ghost" onclick="setPomPreset(50)" style="padding:6px 14px;font-size:12px">50m</button>
+          <button class="btn btn-ghost" onclick="setPomPreset(90)" style="padding:6px 14px;font-size:12px">90m</button>
+        </div>
+        <div class="pom-dots" id="pom-dots"></div>
+        <div class="pom-stat" id="pom-stat">0 sessions · 0 min focused</div>
+      </div>
+
+      <!-- Habits -->
+      <div class="card">
+        <div class="card-lbl">Habit Tracker</div>
+        <div class="card-ttl" id="hab-ttl" style="margin-bottom:14px">This Week — 0/42</div>
+        <div id="hab-grid"></div>
+        <div class="prog-bar" style="margin-top:14px">
+          <div class="prog-fill" id="hab-bar" style="background:linear-gradient(90deg,#4F8CFF,#8B5CF6);width:0%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:right" id="hab-pct">0% weekly completion</div>
+      </div>
+    </div>
+
+    <!-- Schedule list -->
+    <div class="card">
+      <div class="card-lbl">Today's Plan</div>
+      <div class="card-ttl" style="margin-bottom:14px">Structured Daily Timeline</div>
+      <div id="sched-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2: PROGRESS ===== -->
+  <div class="tab-panel" id="panel-2">
+    <div class="g2">
+      <div class="card">
+        <div class="card-lbl">Academics</div>
+        <div class="card-ttl" style="margin-bottom:18px">Course Progress</div>
+        <div id="courses-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-lbl">Targets</div>
+        <div class="card-ttl" style="margin-bottom:20px">Goal Completion</div>
+        <div class="goals-grid" id="goals-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-row">
+        <div><div class="card-lbl">Action Items</div><div class="card-ttl">Task Management</div></div>
+        <div class="card-meta" id="task-meta">0/0</div>
+      </div>
+      <div class="task-add-row">
+        <input type="text" id="task-inp" placeholder="Add a task… (Enter to add)">
+        <select id="task-prio"><option value="high">🔴 High</option><option value="medium" selected>🟡 Medium</option><option value="low">🟢 Low</option></select>
+        <button class="btn btn-accent" onclick="addTask()">+ Add</button>
+      </div>
+      <div id="task-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3: WORKSPACE ===== -->
+  <div class="tab-panel" id="panel-3">
+    <div class="g2">
+      <div class="card">
+        <div class="card-lbl">Identity</div>
+        <div class="card-ttl" style="margin-bottom:18px">Personal Branding</div>
+        <div class="profile-hdr">
+          <div class="profile-av" id="profile-av">AM</div>
+          <div class="profile-fields">
+            <input type="text" id="p-name" placeholder="Your full name" oninput="onProfileChange()">
+            <input type="text" id="p-tagline" placeholder="Tagline / Role" style="margin-top:6px" oninput="onProfileChange()">
+          </div>
+        </div>
+        <div class="field-grp">
+          <div class="field-lbl">Bio</div>
+          <textarea id="p-bio" rows="4" placeholder="Your professional bio…" oninput="onProfileChange()"></textarea>
+        </div>
+        <div class="field-grp">
+          <div class="field-lbl">Links</div>
+          <div id="p-links"></div>
+          <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:6px 14px" onclick="addLink()">+ Add Link</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-lbl">Insights</div>
+        <div class="card-ttl" style="margin-bottom:14px">Skill Analytics Radar</div>
+        <div style="height:240px"><canvas id="chart-radar"></canvas></div>
+        <div class="mini-g" id="mini-stats"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-lbl">Performance</div>
+      <div class="card-ttl">Productivity Heatmap — Last 12 Weeks</div>
+      <div class="heatmap" id="heatmap"></div>
+      <div class="heat-legend">
+        <span>Less</span>
+        <div class="legend-wrap" id="heat-legend-dots"></div>
+        <span>More</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <span>APEX Productivity OS · All data auto-saved locally</span>
+  <div class="footer-status"><div class="status-dot"></div><span>Auto-saved</span></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+'use strict';
+
+/* ─── CONSTANTS ─── */
+const PRIO_COLOR = {high:'#EF4444',medium:'#F59E0B',low:'#10B981'};
+const GOAL_COLORS = ['#4F8CFF','#8B5CF6','#10B981','#F59E0B'];
 const WEEKLY = [
-  {day:"Mon",study:6.5,score:85},{day:"Tue",study:5,score:72},{day:"Wed",study:7.5,score:91},
-  {day:"Thu",study:4,score:65}, {day:"Fri",study:6,score:78},{day:"Sat",study:3.5,score:55},
-  {day:"Sun",study:8,score:94},
+  {day:'Mon',study:6.5,score:85},{day:'Tue',study:5,score:72},{day:'Wed',study:7.5,score:91},
+  {day:'Thu',study:4,score:65},{day:'Fri',study:6,score:78},{day:'Sat',study:3.5,score:55},{day:'Sun',study:8,score:94}
 ];
 const SCHEDULE = [
-  {time:"06:00",label:"Morning Routine", type:"personal",color:C.purple, dur:1  },
-  {time:"07:00",label:"Deep Work Block", type:"study",   color:C.accent, dur:2  },
-  {time:"09:00",label:"BUS 401 Lecture", type:"class",   color:C.success,dur:1.5},
-  {time:"11:00",label:"FIN 301 Review",  type:"study",   color:C.accent, dur:1  },
-  {time:"12:00",label:"Lunch",           type:"break",   color:C.warn,   dur:1  },
-  {time:"13:00",label:"MGT 450 Study",   type:"study",   color:C.accent, dur:2  },
-  {time:"15:00",label:"Gym",             type:"personal",color:C.purple, dur:1  },
-  {time:"16:00",label:"Project Work",    type:"study",   color:C.accent, dur:2  },
-  {time:"20:00",label:"Reading",         type:"personal",color:C.success,dur:1  },
-  {time:"22:00",label:"Wind Down",       type:"break",   color:C.warn,   dur:0.5},
+  {time:'06:00',label:'Morning Routine',type:'personal',color:'#8B5CF6',dur:1},
+  {time:'07:00',label:'Deep Work Block',type:'study',color:'#4F8CFF',dur:2},
+  {time:'09:00',label:'BUS 401 Lecture',type:'class',color:'#10B981',dur:1.5},
+  {time:'11:00',label:'FIN 301 Review',type:'study',color:'#4F8CFF',dur:1},
+  {time:'12:00',label:'Lunch Break',type:'break',color:'#F59E0B',dur:1},
+  {time:'13:00',label:'MGT 450 Study',type:'study',color:'#4F8CFF',dur:2},
+  {time:'15:00',label:'Gym',type:'personal',color:'#8B5CF6',dur:1},
+  {time:'16:00',label:'Project Work',type:'study',color:'#4F8CFF',dur:2},
+  {time:'20:00',label:'Reading',type:'personal',color:'#10B981',dur:1},
+  {time:'22:00',label:'Wind Down',type:'break',color:'#F59E0B',dur:0.5}
 ];
-const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const TABS = ["Dashboard","Focus","Progress","Workspace"];
-const POMO_DEFAULT = 25 * 60;
-const PRIO_COLORS = { high:C.danger, medium:C.warn, low:C.success };
-
-const Tip = ({active, payload, label}) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{background:C.s2,border:`1px solid ${C.borderHi}`,borderRadius:10,padding:"8px 14px",fontSize:12,color:C.text}}>
-      <div style={{color:C.muted,marginBottom:4}}>{label}</div>
-      {payload.map((p,i)=>(
-        <div key={i} style={{color:p.color,display:"flex",gap:8,alignItems:"center"}}>
-          <span style={{width:8,height:8,borderRadius:"50%",background:p.color,display:"inline-block"}}/>
-          {p.name}: <b>{p.value}</b>
-        </div>
-      ))}
-    </div>
-  );
+const PIE_KEYS = [
+  {key:'study',label:'Study',color:'#4F8CFF'},
+  {key:'entertainment',label:'Entertainment',color:'#8B5CF6'},
+  {key:'exercise',label:'Exercise',color:'#10B981'},
+  {key:'social',label:'Social',color:'#F59E0B'}
+];
+const DEFAULTS = {
+  habits:[
+    {id:1,name:'Deep Work',icon:'⚡',days:Array(7).fill(false)},
+    {id:2,name:'Exercise',icon:'🔥',days:Array(7).fill(false)},
+    {id:3,name:'Reading',icon:'📖',days:Array(7).fill(false)},
+    {id:4,name:'Meditation',icon:'🧘',days:Array(7).fill(false)},
+    {id:5,name:'No Socials',icon:'🚫',days:Array(7).fill(false)},
+    {id:6,name:'Cold Shower',icon:'❄️',days:Array(7).fill(false)}
+  ],
+  courses:[
+    {id:1,name:'International Business',code:'BUS 401',progress:65,color:'#4F8CFF'},
+    {id:2,name:'Corporate Finance',code:'FIN 301',progress:48,color:'#8B5CF6'},
+    {id:3,name:'Strategic Management',code:'MGT 450',progress:72,color:'#10B981'},
+    {id:4,name:'Business Analytics',code:'BAN 305',progress:38,color:'#F59E0B'},
+    {id:5,name:'Marketing Strategy',code:'MKT 320',progress:55,color:'#EC4899'}
+  ],
+  goals:[
+    {id:1,name:'GPA',current:3.5,max:4.0},
+    {id:2,name:'Internship Apps',current:12,max:20},
+    {id:3,name:'Study Hrs/Wk',current:28,max:40},
+    {id:4,name:'Network Events',current:6,max:10}
+  ],
+  tasks:[
+    {id:1,text:'BUS 401 — Case study analysis',priority:'high',done:false},
+    {id:2,text:'FIN 301 — Review Chapter 5 formulas',priority:'high',done:false},
+    {id:3,text:'MGT 450 — Submit group project',priority:'medium',done:false},
+    {id:4,text:'Update LinkedIn with new skills',priority:'low',done:true},
+    {id:5,text:'Prepare internship portfolio',priority:'medium',done:false}
+  ],
+  profile:{name:'Alex Monroe',tagline:'Future Business Leader · Strategy & Finance',bio:"BBA '26 · Building skills that matter · Focused on international markets and disruptive innovation.",links:['linkedin.com/in/alexmonroe','github.com/alexmonroe']},
+  timeRatio:{study:28,entertainment:8,exercise:4,social:5},
+  pomSessions:0
 };
 
-function GoalRing({g, idx, onUpdate}) {
-  const pct = Math.round((g.current/g.max)*100);
-  const cols = [C.accent,C.purple,C.success,C.warn];
-  const col = cols[idx%cols.length];
-  const circ = 2*Math.PI*34;
-  return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-      <div style={{position:"relative",width:88,height:88}}>
-        <svg width={88} height={88} style={{transform:"rotate(-90deg)"}}>
-          <circle cx={44} cy={44} r={34} fill="none" stroke={C.s2} strokeWidth={7}/>
-          <circle cx={44} cy={44} r={34} fill="none" stroke={col} strokeWidth={7}
-            strokeDasharray={`${(pct/100)*circ} ${circ}`} strokeLinecap="round"/>
-        </svg>
-        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center"}}>
-          <div style={{fontSize:18,fontWeight:800,color:col}}>{pct}%</div>
-        </div>
-      </div>
-      <div style={{textAlign:"center"}}>
-        <div style={{fontSize:12,fontWeight:600,color:C.text}}>{g.name}</div>
-        <div style={{fontSize:12,color:C.muted,display:"flex",alignItems:"center",justifyContent:"center",gap:2}}>
-          <input type="number" min={0} max={g.max} value={g.current}
-            onChange={e=>onUpdate(Math.min(+e.target.value,g.max))}
-            style={{background:"transparent",border:"none",color:col,fontWeight:700,fontSize:13,width:32,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
-          / {g.max}
-        </div>
-      </div>
-    </div>
-  );
+/* ─── STATE ─── */
+let S = {};
+function loadState(){
+  for(const k in DEFAULTS){
+    try{ const v=localStorage.getItem('apex:'+k); S[k]=v?JSON.parse(v):JSON.parse(JSON.stringify(DEFAULTS[k])); }
+    catch{ S[k]=JSON.parse(JSON.stringify(DEFAULTS[k])); }
+  }
+}
+function save(k){ try{ localStorage.setItem('apex:'+k,JSON.stringify(S[k])); }catch{} }
+
+/* ─── COMPUTED ─── */
+function C(){
+  const hs=S.habits.reduce((a,h)=>a+h.days.filter(Boolean).length,0);
+  const hm=S.habits.length*7;
+  const hp=Math.round(hs/hm*100);
+  const td=S.tasks.filter(t=>t.done).length;
+  const tp=S.tasks.length?Math.round(td/S.tasks.length*100):0;
+  const ac=Math.round(S.courses.reduce((a,c)=>a+c.progress,0)/S.courses.length);
+  const ov=Math.round(hp*0.3+tp*0.3+ac*0.4);
+  const tt=Object.values(S.timeRatio).reduce((a,b)=>a+b,0);
+  return{hs,hm,hp,td,tp,ac,ov,tt};
 }
 
-function App() {
-  const [tab,        setTab]        = useState(0);
-  const [habits,     setHabits]     = useState(()=>storeLoad("apex:habits",   DEFAULT_HABITS));
-  const [courses,    setCourses]    = useState(()=>storeLoad("apex:courses",  DEFAULT_COURSES));
-  const [goals,      setGoals]      = useState(()=>storeLoad("apex:goals",    DEFAULT_GOALS));
-  const [tasks,      setTasks]      = useState(()=>storeLoad("apex:tasks",    DEFAULT_TASKS));
-  const [profile,    setProfile]    = useState(()=>storeLoad("apex:profile",  DEFAULT_PROFILE));
-  const [timeRatio,  setTimeRatio]  = useState(()=>storeLoad("apex:time",     DEFAULT_TIME));
-  const [pomSessions,setPomSessions]= useState(()=>storeLoad("apex:pom",      0));
-  const [newTask,    setNewTask]    = useState("");
-  const [newPrio,    setNewPrio]    = useState("medium");
-  const [pomTime,    setPomTime]    = useState(POMO_DEFAULT);
-  const [pomRunning, setPomRunning] = useState(false);
-  const [pomMode,    setPomMode]    = useState("work");
-  const pomRef = useRef(null);
+/* ─── TAB SYSTEM ─── */
+let curTab=0;
+const chartsDone={};
+function showTab(i){
+  document.querySelectorAll('.tab-panel').forEach((p,j)=>p.classList.toggle('active',j===i));
+  document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  curTab=i;
+  if(!chartsDone[i]){ chartsDone[i]=true; setTimeout(()=>initTabCharts(i),60); }
+  if(i===2) renderProgress();
+  if(i===3){ renderWorkspace(); if(!chartsDone[99]){ chartsDone[99]=true; setTimeout(initRadar,80); } }
+}
 
-  useEffect(()=>{ storeSave("apex:habits",  habits);      },[habits]);
-  useEffect(()=>{ storeSave("apex:courses", courses);     },[courses]);
-  useEffect(()=>{ storeSave("apex:goals",   goals);       },[goals]);
-  useEffect(()=>{ storeSave("apex:tasks",   tasks);       },[tasks]);
-  useEffect(()=>{ storeSave("apex:profile", profile);     },[profile]);
-  useEffect(()=>{ storeSave("apex:time",    timeRatio);   },[timeRatio]);
-  useEffect(()=>{ storeSave("apex:pom",     pomSessions); },[pomSessions]);
+/* ─── CHART SETUP ─── */
+Chart.defaults.color='#94A3B8';
+Chart.defaults.font.family="'Inter',-apple-system,sans-serif";
+Chart.defaults.font.size=11;
+let wChart,pChart,rChart;
 
-  useEffect(()=>{
-    if (pomRunning) {
-      pomRef.current = setInterval(()=>{
-        setPomTime(t=>{
-          if (t<=1) {
-            clearInterval(pomRef.current);
-            setPomRunning(false);
-            setPomSessions(s=>s+1);
-            setPomMode(m=>m==="work"?"break":"work");
-            return pomMode==="work" ? 5*60 : POMO_DEFAULT;
-          }
-          return t-1;
-        });
-      },1000);
-    } else { clearInterval(pomRef.current); }
-    return ()=>clearInterval(pomRef.current);
-  },[pomRunning]);
+function initTabCharts(i){
+  if(i===0){ initWeekly(); initPie(); }
+}
 
-  const toggleHabit = (hid,di) =>
-    setHabits(hs=>hs.map(h=>h.id===hid?{...h,days:h.days.map((d,i)=>i===di?!d:d)}:h));
-  const toggleTask  = id => setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
-  const deleteTask  = id => setTasks(ts=>ts.filter(t=>t.id!==id));
-  const addTask     = ()=>{ if(!newTask.trim()) return; setTasks(ts=>[...ts,{id:Date.now(),text:newTask.trim(),priority:newPrio,done:false}]); setNewTask(""); };
+function gradLine(ctx,c1,c2){
+  const g=ctx.createLinearGradient(0,0,0,220);
+  g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+}
 
-  const habitScore  = habits.reduce((a,h)=>a+h.days.filter(Boolean).length,0);
-  const habitMax    = habits.length*7;
-  const habitPct    = Math.round((habitScore/habitMax)*100);
-  const tasksDone   = tasks.filter(t=>t.done).length;
-  const tasksPct    = tasks.length?Math.round((tasksDone/tasks.length)*100):0;
-  const avgCourse   = Math.round(courses.reduce((a,c)=>a+c.progress,0)/courses.length);
-  const overallScore= Math.round(habitPct*0.3+tasksPct*0.3+avgCourse*0.4);
-  const pomDur      = pomMode==="work"?POMO_DEFAULT:5*60;
-  const pomPct      = Math.max(0,Math.round((1-pomTime/pomDur)*100));
-  const pomMin      = String(Math.floor(pomTime/60)).padStart(2,"0");
-  const pomSec      = String(pomTime%60).padStart(2,"0");
-  const totalTime   = Object.values(timeRatio).reduce((a,b)=>a+b,0);
-  const pieData     = [
-    {name:"Study",         value:timeRatio.study,         color:C.accent },
-    {name:"Entertainment", value:timeRatio.entertainment,  color:C.purple },
-    {name:"Exercise",      value:timeRatio.exercise,       color:C.success},
-    {name:"Social",        value:timeRatio.social,         color:C.warn   },
-  ];
-  const now      = new Date();
-  const timeStr  = now.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
-  const dateStr  = now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
-  const greeting = now.getHours()<12?"Morning":now.getHours()<18?"Afternoon":"Evening";
-
-  const tabBtn = active => ({
-    background:active?C.accent:"transparent", color:active?"#fff":C.muted,
-    border:`1px solid ${active?C.accent:C.border}`, borderRadius:10,
-    padding:"7px 18px", fontSize:13, fontWeight:active?600:400, letterSpacing:"0.02em",
+function initWeekly(){
+  const el=document.getElementById('chart-weekly');
+  if(!el||wChart) return;
+  const ctx=el.getContext('2d');
+  wChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:WEEKLY.map(w=>w.day),
+      datasets:[
+        {label:'Study hrs',data:WEEKLY.map(w=>w.study),borderColor:'#4F8CFF',backgroundColor:gradLine(ctx,'rgba(79,140,255,.3)','rgba(79,140,255,0)'),fill:true,tension:.4,borderWidth:2.5,pointRadius:0},
+        {label:'Score',data:WEEKLY.map(w=>w.score),borderColor:'#8B5CF6',backgroundColor:gradLine(ctx,'rgba(139,92,246,.22)','rgba(139,92,246,0)'),fill:true,tension:.4,borderWidth:2.5,pointRadius:0}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#2B313D',borderColor:'rgba(79,140,255,.3)',borderWidth:1,cornerRadius:10,padding:10}},
+      scales:{
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#94A3B8',font:{size:11}}},
+        y:{grid:{color:'rgba(79,140,255,.05)'},border:{display:false},ticks:{color:'#94A3B8',font:{size:11}}}
+      }
+    }
   });
-
-  return (
-    <div style={{background:C.bg, minHeight:"100vh", color:C.text, paddingBottom:40}}>
-      {/* NAV */}
-      <div style={{background:"rgba(15,17,21,0.95)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:100}}>
-        <div style={{maxWidth:1100,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:58}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:28,height:28,borderRadius:8,background:`linear-gradient(135deg,${C.accent},${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <i className="ti ti-bolt" style={{fontSize:15,color:"#fff"}}/>
-            </div>
-            <span style={{fontWeight:700,fontSize:15,letterSpacing:"-0.02em",color:C.text}}>APEX</span>
-          </div>
-          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-            {TABS.map((t,i)=><button key={t} onClick={()=>setTab(i)} style={tabBtn(tab===i)}>{t}</button>)}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <span style={{fontSize:12,color:C.muted}}>{timeStr}</span>
-            <div style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>
-              {profile.name.split(" ").map(n=>n[0]).join("")}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{maxWidth:1100,margin:"0 auto",padding:"28px 24px 0"}}>
-
-        {/* === DASHBOARD === */}
-        {tab===0&&<div>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:28,flexWrap:"wrap",gap:16}}>
-            <div>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:4}}>{dateStr}</div>
-              <div style={{fontSize:26,fontWeight:700,letterSpacing:"-0.04em",color:C.text}}>Good {greeting}, {profile.name.split(" ")[0]} 👋</div>
-              <div style={{fontSize:13,color:C.muted,marginTop:4}}>{profile.tagline}</div>
-            </div>
-            <div style={{...card({padding:"16px 24px",display:"flex",alignItems:"center",gap:16}),background:"linear-gradient(135deg,rgba(79,140,255,0.15),rgba(139,92,246,0.1))",border:`1px solid ${C.borderHi}`}}>
-              <div style={{position:"relative",width:72,height:72}}>
-                <svg width={72} height={72} style={{transform:"rotate(-90deg)"}}>
-                  <circle cx={36} cy={36} r={30} fill="none" stroke={C.s2} strokeWidth={6}/>
-                  <circle cx={36} cy={36} r={30} fill="none" stroke={C.accent} strokeWidth={6}
-                    strokeDasharray={`${(overallScore/100)*188.5} 188.5`} strokeLinecap="round"/>
-                </svg>
-                <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center"}}>
-                  <div style={{fontSize:20,fontWeight:800,color:C.text}}>{overallScore}</div>
-                </div>
-              </div>
-              <div>
-                <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase"}}>Productivity</div>
-                <div style={{fontSize:15,fontWeight:600,color:C.text}}>Score</div>
-                <div style={{fontSize:11,color:overallScore>=75?C.success:C.warn,marginTop:2}}>{overallScore>=75?"↑ On Track":"⚠ Needs Focus"}</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12,marginBottom:20}}>
-            {[
-              {label:"Habit Score",    value:`${habitPct}%`,         sub:`${habitScore}/${habitMax} streaks`,   color:C.accent, icon:"ti-flame"     },
-              {label:"Tasks Done",     value:`${tasksDone}/${tasks.length}`, sub:`${tasksPct}% complete`,       color:C.purple, icon:"ti-checks"    },
-              {label:"Avg Progress",   value:`${avgCourse}%`,        sub:"across 5 courses",                    color:C.success,icon:"ti-chart-line" },
-              {label:"Focus Sessions", value:pomSessions,             sub:`${pomSessions*25} min total`,         color:C.warn,   icon:"ti-clock"     },
-            ].map(s=>(
-              <div key={s.label} style={card({position:"relative",overflow:"hidden"})}>
-                <div style={{position:"absolute",top:-10,right:-10,width:60,height:60,borderRadius:"50%",background:s.color,opacity:0.08}}/>
-                <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
-                  <div>
-                    <div style={{fontSize:11,color:C.muted,letterSpacing:"0.08em",textTransform:"uppercase"}}>{s.label}</div>
-                    <div style={{fontSize:26,fontWeight:800,color:s.color,letterSpacing:"-0.04em",marginTop:4}}>{s.value}</div>
-                    <div style={{fontSize:11,color:C.muted,marginTop:2}}>{s.sub}</div>
-                  </div>
-                  <div style={{width:34,height:34,borderRadius:10,background:`${s.color}22`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <i className={`ti ${s.icon}`} style={{fontSize:18,color:s.color}}/>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:16,marginBottom:16}}>
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:4}}>Weekly Performance</div>
-              <div style={{fontSize:18,fontWeight:700,color:C.text,marginBottom:14}}>Study Hours & Score</div>
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={WEEKLY} margin={{top:0,right:0,left:-20,bottom:0}}>
-                  <defs>
-                    <linearGradient id="gS" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={C.accent} stopOpacity={0.3}/><stop offset="95%" stopColor={C.accent} stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={C.purple} stopOpacity={0.25}/><stop offset="95%" stopColor={C.purple} stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="day" stroke={C.muted} tick={{fill:C.muted,fontSize:11}} axisLine={false} tickLine={false}/>
-                  <YAxis stroke="none" tick={{fill:C.muted,fontSize:11}}/>
-                  <Tooltip content={<Tip/>}/>
-                  <Area type="monotone" dataKey="study" name="Study hrs" stroke={C.accent} strokeWidth={2} fill="url(#gS)" dot={false}/>
-                  <Area type="monotone" dataKey="score" name="Score"     stroke={C.purple} strokeWidth={2} fill="url(#gP)" dot={false}/>
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:4}}>Time Ratio</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:10}}>Weekly Hours</div>
-              <ResponsiveContainer width="100%" height={130}>
-                <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={38} outerRadius={60} paddingAngle={3} dataKey="value">
-                    {pieData.map((e,i)=><Cell key={i} fill={e.color}/>)}
-                  </Pie>
-                  <Tooltip formatter={(v,n)=>[`${v}h`,n]} contentStyle={{background:C.s2,border:`1px solid ${C.borderHi}`,borderRadius:10,fontSize:12,color:C.text}}/>
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{display:"flex",flexDirection:"column",gap:7,marginTop:6}}>
-                {pieData.map(p=>(
-                  <div key={p.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <div style={{width:7,height:7,borderRadius:"50%",background:p.color}}/><span style={{fontSize:12,color:C.muted}}>{p.name}</span>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <input type="range" min={0} max={50} step={1} value={p.value}
-                        onChange={e=>setTimeRatio(r=>({...r,[p.name.toLowerCase()]:+e.target.value}))}
-                        style={{width:55,accentColor:p.color}}/>
-                      <span style={{fontSize:12,fontWeight:600,color:C.text,minWidth:24}}>{p.value}h</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={card()}>
-            <div style={{fontSize:11,color:C.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:4}}>Daily Schedule</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:14}}>Today's Timeline</div>
-            <div style={{overflowX:"auto"}}>
-              <div style={{display:"flex",gap:6,minWidth:600,paddingBottom:8}}>
-                {SCHEDULE.map((s,i)=>(
-                  <div key={i} style={{minWidth:Math.max(60,s.dur*55),flex:s.dur,background:`${s.color}18`,border:`1px solid ${s.color}44`,borderRadius:10,padding:"10px 8px",overflow:"hidden"}}>
-                    <div style={{fontSize:10,color:s.color,fontWeight:700}}>{s.time}</div>
-                    <div style={{fontSize:11,color:C.text,fontWeight:500,marginTop:3,lineHeight:1.3}}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>}
-
-        {/* === FOCUS === */}
-        {tab===1&&<div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
-            <div style={card({display:"flex",flexDirection:"column",alignItems:"center",padding:"30px 24px"})}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>Pomodoro Timer</div>
-              <div style={{fontSize:12,color:pomMode==="work"?C.accent:C.success,marginBottom:20,fontWeight:600}}>{pomMode==="work"?"FOCUS SESSION":"BREAK TIME"}</div>
-              <div style={{position:"relative",width:180,height:180,marginBottom:20}}>
-                <svg width={180} height={180} style={{transform:"rotate(-90deg)",position:"absolute",top:0,left:0}}>
-                  <circle cx={90} cy={90} r={80} fill="none" stroke={C.s2} strokeWidth={8}/>
-                  <circle cx={90} cy={90} r={80} fill="none" stroke={pomMode==="work"?C.accent:C.success} strokeWidth={8}
-                    strokeDasharray={`${pomPct/100*502.65} 502.65`} strokeLinecap="round"/>
-                </svg>
-                <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center"}}>
-                  <div style={{fontSize:42,fontWeight:800,color:C.text,letterSpacing:"-0.04em"}}>{pomMin}:{pomSec}</div>
-                  <div style={{fontSize:11,color:C.muted,marginTop:2}}>Session {pomSessions+1}</div>
-                </div>
-              </div>
-              <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>setPomRunning(r=>!r)}
-                  style={{background:pomRunning?`${C.danger}22`:`${C.accent}22`,border:`1px solid ${pomRunning?C.danger:C.accent}`,borderRadius:12,padding:"10px 28px",color:pomRunning?C.danger:C.accent,fontWeight:700,fontSize:14}}>
-                  {pomRunning?"⏸ Pause":"▶ Start"}
-                </button>
-                <button onClick={()=>{setPomRunning(false);setPomTime(POMO_DEFAULT);setPomMode("work");}}
-                  style={{background:C.s2,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 16px",color:C.muted}}>Reset</button>
-              </div>
-              <div style={{display:"flex",gap:8,marginTop:16}}>
-                {[25,50,90].map(m=>(
-                  <button key={m} onClick={()=>{setPomTime(m*60);setPomRunning(false);}}
-                    style={{background:C.s2,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 12px",color:C.muted,fontSize:12}}>{m}m</button>
-                ))}
-              </div>
-              <div style={{display:"flex",gap:6,marginTop:16,flexWrap:"wrap",justifyContent:"center"}}>
-                {Array.from({length:Math.min(pomSessions,8)}).map((_,i)=>(
-                  <div key={i} style={{width:10,height:10,borderRadius:"50%",background:C.accent}}/>
-                ))}
-              </div>
-              <div style={{fontSize:12,color:C.muted,marginTop:8}}>{pomSessions} sessions · {pomSessions*25} min focused</div>
-            </div>
-
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Habit Tracker</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:14}}>This Week — {habitScore}/{habitMax}</div>
-              <div style={{display:"flex",alignItems:"center",marginBottom:10}}>
-                <div style={{width:110}}/>{DAYS.map(d=><div key={d} style={{flex:1,textAlign:"center",fontSize:10,color:C.muted}}>{d.slice(0,2)}</div>)}
-              </div>
-              {habits.map(h=>(
-                <div key={h.id} style={{display:"flex",alignItems:"center",marginBottom:10}}>
-                  <div style={{width:110,display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:14}}>{h.icon}</span>
-                    <span style={{fontSize:12,color:C.text}}>{h.name}</span>
-                  </div>
-                  {h.days.map((done,di)=>(
-                    <div key={di} style={{flex:1,display:"flex",justifyContent:"center"}}>
-                      <div onClick={()=>toggleHabit(h.id,di)}
-                        style={{width:24,height:24,borderRadius:6,background:done?C.accent:C.s2,border:`1px solid ${done?C.accent:C.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        {done&&<i className="ti ti-check" style={{fontSize:12,color:"#fff"}}/>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div style={{marginTop:14,height:4,background:C.s2,borderRadius:4,overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${habitPct}%`,background:`linear-gradient(90deg,${C.accent},${C.purple})`,borderRadius:4}}/>
-              </div>
-              <div style={{fontSize:11,color:C.muted,marginTop:6,textAlign:"right"}}>{habitPct}% weekly completion</div>
-            </div>
-          </div>
-
-          <div style={card()}>
-            <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Today's Plan</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:14}}>Structured Daily Timeline</div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {SCHEDULE.map((s,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"10px 14px",background:`${s.color}0e`,border:`1px solid ${s.color}30`,borderRadius:10,borderLeft:`3px solid ${s.color}`}}>
-                  <div style={{fontSize:12,color:s.color,fontWeight:700,minWidth:48}}>{s.time}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,color:C.text,fontWeight:500}}>{s.label}</div>
-                    <div style={{fontSize:11,color:C.muted}}>{s.dur}h</div>
-                  </div>
-                  <div style={{fontSize:10,color:s.color,background:`${s.color}20`,padding:"3px 9px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:600}}>{s.type}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>}
-
-        {/* === PROGRESS === */}
-        {tab===2&&<div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Academics</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:16}}>Course Progress</div>
-              {courses.map(c=>(
-                <div key={c.id} style={{marginBottom:16}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:600,color:C.text}}>{c.name}</div>
-                      <div style={{fontSize:11,color:C.muted}}>{c.code}</div>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <input type="range" min={0} max={100} step={1} value={c.progress}
-                        onChange={e=>setCourses(cs=>cs.map(x=>x.id===c.id?{...x,progress:+e.target.value}:x))}
-                        style={{width:70,accentColor:c.color}}/>
-                      <span style={{fontSize:14,fontWeight:700,color:c.color,minWidth:36}}>{c.progress}%</span>
-                    </div>
-                  </div>
-                  <div style={{height:5,background:C.s2,borderRadius:4,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${c.progress}%`,background:`linear-gradient(90deg,${c.color}88,${c.color})`,borderRadius:4}}/>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Targets</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:20}}>Goal Completion</div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-                {goals.map((g,i)=>(
-                  <GoalRing key={g.id} g={g} idx={i} onUpdate={v=>setGoals(gs=>gs.map(x=>x.id===g.id?{...x,current:v}:x))}/>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={card()}>
-            <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Action Items</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span>Task Management</span>
-              <span style={{fontSize:12,color:C.muted,fontWeight:400}}>{tasksDone}/{tasks.length} completed</span>
-            </div>
-            <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-              <input value={newTask} onChange={e=>setNewTask(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTask()}
-                placeholder="Add a task..." style={{...inputStyle,flex:1,minWidth:160}}/>
-              <select value={newPrio} onChange={e=>setNewPrio(e.target.value)} style={{...inputStyle,width:100}}>
-                <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
-              </select>
-              <button onClick={addTask} style={{background:C.accent,border:"none",borderRadius:10,padding:"9px 18px",color:"#fff",fontWeight:600,fontSize:13}}>+ Add</button>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {tasks.map(t=>(
-                <div key={t.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",background:C.s1,border:`1px solid ${C.border}`,borderRadius:10,opacity:t.done?0.55:1,borderLeft:`3px solid ${PRIO_COLORS[t.priority]}`}}>
-                  <div onClick={()=>toggleTask(t.id)}
-                    style={{width:20,height:20,borderRadius:6,background:t.done?C.accent:"transparent",border:`2px solid ${t.done?C.accent:C.border}`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    {t.done&&<i className="ti ti-check" style={{fontSize:11,color:"#fff"}}/>}
-                  </div>
-                  <span style={{flex:1,fontSize:13,color:t.done?C.muted:C.text,textDecoration:t.done?"line-through":"none"}}>{t.text}</span>
-                  <span style={{fontSize:10,color:PRIO_COLORS[t.priority],background:`${PRIO_COLORS[t.priority]}18`,padding:"3px 8px",borderRadius:20,textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:600}}>{t.priority}</span>
-                  <button onClick={()=>deleteTask(t.id)} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",padding:0,display:"flex",alignItems:"center"}}>
-                    <i className="ti ti-x" style={{fontSize:14}}/>
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>}
-
-        {/* === WORKSPACE === */}
-        {tab===3&&<div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}>
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Identity</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:16}}>Personal Branding</div>
-              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
-                <div style={{width:64,height:64,borderRadius:18,background:`linear-gradient(135deg,${C.accent},${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:"#fff",flexShrink:0}}>
-                  {profile.name.split(" ").map(n=>n[0]).join("")}
-                </div>
-                <div style={{flex:1}}>
-                  <input value={profile.name} onChange={e=>setProfile(p=>({...p,name:e.target.value}))}
-                    style={{...inputStyle,fontSize:15,fontWeight:700,marginBottom:6}} placeholder="Your name"/>
-                  <input value={profile.tagline} onChange={e=>setProfile(p=>({...p,tagline:e.target.value}))}
-                    style={{...inputStyle,fontSize:12}} placeholder="Tagline"/>
-                </div>
-              </div>
-              <div style={{marginBottom:14}}>
-                <div style={{fontSize:11,color:C.muted,marginBottom:6,letterSpacing:"0.06em",textTransform:"uppercase"}}>Bio</div>
-                <textarea value={profile.bio} onChange={e=>setProfile(p=>({...p,bio:e.target.value}))}
-                  rows={4} style={{...inputStyle,resize:"vertical",lineHeight:1.6}} placeholder="Your professional bio..."/>
-              </div>
-              <div>
-                <div style={{fontSize:11,color:C.muted,marginBottom:8,letterSpacing:"0.06em",textTransform:"uppercase"}}>Links</div>
-                {profile.links.map((l,i)=>(
-                  <input key={i} value={l} onChange={e=>setProfile(p=>({...p,links:p.links.map((x,j)=>j===i?e.target.value:x)}))}
-                    style={{...inputStyle,marginBottom:6}} placeholder="URL..."/>
-                ))}
-                <button onClick={()=>setProfile(p=>({...p,links:[...p.links,""]}))}
-                  style={{background:C.s2,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 14px",color:C.muted,fontSize:12}}>+ Add Link</button>
-              </div>
-            </div>
-
-            <div style={card()}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Insights</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:14}}>Skill Analytics</div>
-              <ResponsiveContainer width="100%" height={230}>
-                <RadarChart data={[
-                  {subject:"Academics", value:avgCourse},
-                  {subject:"Habits",    value:habitPct},
-                  {subject:"Tasks",     value:tasksPct},
-                  {subject:"Focus",     value:Math.min(100,pomSessions*10)},
-                  {subject:"Study Time",value:Math.round((timeRatio.study/40)*100)},
-                  {subject:"Balance",   value:Math.round(100-(timeRatio.entertainment/totalTime)*100)},
-                ]}>
-                  <PolarGrid stroke={C.border}/>
-                  <PolarAngleAxis dataKey="subject" tick={{fill:C.muted,fontSize:11}}/>
-                  <Radar dataKey="value" stroke={C.accent} fill={C.accent} fillOpacity={0.2}/>
-                  <Tooltip contentStyle={{background:C.s2,border:`1px solid ${C.borderHi}`,borderRadius:10,fontSize:12,color:C.text}}/>
-                </RadarChart>
-              </ResponsiveContainer>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:8}}>
-                {[
-                  {label:"Overall Score",   value:overallScore,                       color:C.accent },
-                  {label:"Consistency",     value:`${habitPct}%`,                     color:C.purple },
-                  {label:"Completion Rate", value:`${tasksPct}%`,                     color:C.success},
-                  {label:"Focus Score",     value:`${Math.min(100,pomSessions*10)}%`, color:C.warn   },
-                ].map(s=>(
-                  <div key={s.label} style={{background:C.s2,borderRadius:10,padding:"10px 12px",border:`1px solid ${C.border}`}}>
-                    <div style={{fontSize:10,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em"}}>{s.label}</div>
-                    <div style={{fontSize:20,fontWeight:800,color:s.color,marginTop:2}}>{s.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={card()}>
-            <div style={{fontSize:11,color:C.muted,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>Performance</div>
-            <div style={{fontSize:16,fontWeight:700,color:C.text,marginBottom:16}}>Productivity Heatmap — Last 12 Weeks</div>
-            <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-              {Array.from({length:84}).map((_,i)=>{
-                const v = 0.1+Math.abs(Math.sin(i*0.7+1.3))*0.9;
-                return <div key={i} style={{width:14,height:14,borderRadius:3,background:C.accent,opacity:v}} title={`Day ${i+1}: ${Math.round(v*100)}%`}/>;
-              })}
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginTop:12}}>
-              <span style={{fontSize:11,color:C.muted}}>Less</span>
-              {[0.1,0.3,0.55,0.75,0.95].map((o,i)=>(
-                <div key={i} style={{width:14,height:14,borderRadius:3,background:C.accent,opacity:o}}/>
-              ))}
-              <span style={{fontSize:11,color:C.muted}}>More</span>
-            </div>
-          </div>
-        </div>}
-      </div>
-
-      <div style={{maxWidth:1100,margin:"28px auto 0",padding:"0 24px"}}>
-        <div style={{borderTop:`1px solid ${C.border}`,paddingTop:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <span style={{fontSize:11,color:C.muted}}>APEX Productivity · Data saved to browser localStorage</span>
-          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.success}}/><span style={{fontSize:11,color:C.muted}}>Auto-saved</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+function initPie(){
+  const el=document.getElementById('chart-pie');
+  if(!el||pChart) return;
+  pChart=new Chart(el.getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:PIE_KEYS.map(p=>p.label),
+      datasets:[{data:PIE_KEYS.map(p=>S.timeRatio[p.key]),backgroundColor:PIE_KEYS.map(p=>p.color),borderWidth:0,hoverOffset:4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#2B313D',borderColor:'rgba(79,140,255,.3)',borderWidth:1,cornerRadius:10,callbacks:{label:c=>` ${c.formattedValue}h ${c.label}`}}}
+    }
+  });
+}
+
+function updatePieChart(){
+  if(!pChart) return;
+  pChart.data.datasets[0].data=PIE_KEYS.map(p=>S.timeRatio[p.key]);
+  pChart.update();
+}
+
+function initRadar(){
+  const el=document.getElementById('chart-radar');
+  if(!el||rChart) return;
+  const cv=C();
+  rChart=new Chart(el.getContext('2d'),{
+    type:'radar',
+    data:{
+      labels:['Academics','Habits','Tasks','Focus','Study Time','Balance'],
+      datasets:[{
+        data:[cv.ac,cv.hp,cv.tp,Math.min(100,S.pomSessions*10),Math.round(S.timeRatio.study/40*100),Math.round(100-S.timeRatio.entertainment/cv.tt*100)],
+        borderColor:'#4F8CFF',backgroundColor:'rgba(79,140,255,.14)',pointBackgroundColor:'#4F8CFF',pointRadius:3,borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#2B313D',borderColor:'rgba(79,140,255,.3)',borderWidth:1,cornerRadius:10}},
+      scales:{r:{backgroundColor:'transparent',grid:{color:'rgba(79,140,255,.1)'},angleLines:{color:'rgba(79,140,255,.1)'},pointLabels:{color:'#94A3B8',font:{size:11}},ticks:{display:false},min:0,max:100}}
+    }
+  });
+}
+
+function updateRadar(){
+  if(!rChart) return;
+  const cv=C();
+  rChart.data.datasets[0].data=[cv.ac,cv.hp,cv.tp,Math.min(100,S.pomSessions*10),Math.round(S.timeRatio.study/40*100),Math.round(100-S.timeRatio.entertainment/cv.tt*100)];
+  rChart.update();
+}
+
+/* ─── RENDER ─── */
+function renderAll(){
+  const cv=C();
+  renderHeader(cv); renderStats(cv); renderHabits(cv); renderPieSliders(); renderSchedBar(); renderSchedList(); renderProgress(); updatePomUI(); renderHeatmap(); renderProfile();
+}
+
+function setRing(id,pct,circ){
+  const el=document.getElementById(id);
+  if(el) el.setAttribute('stroke-dasharray',`${pct/100*circ} ${circ}`);
+}
+
+function renderHeader(cv){
+  const now=new Date();
+  const h=now.getHours();
+  const g=h<12?'Morning':h<18?'Afternoon':'Evening';
+  const fn=S.profile.name.split(' ')[0]||'Friend';
+  document.getElementById('date-lbl').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('greet-txt').textContent=`Good ${g}, ${fn} 👋`;
+  document.getElementById('tagline-txt').textContent=S.profile.tagline;
+  const el=document.getElementById('score-status');
+  el.textContent=cv.ov>=75?'↑ On Track':'⚠ Needs Focus';
+  el.style.color=cv.ov>=75?'#10B981':'#F59E0B';
+  document.getElementById('score-lbl').textContent=cv.ov;
+  setRing('score-fill',cv.ov,226.2);
+  const initials=S.profile.name.split(' ').map(n=>n[0]).join('').toUpperCase()||'AP';
+  ['nav-av','profile-av'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=initials; });
+}
+
+function renderStats(cv){
+  const items=[
+    {lbl:'Habit Score',val:`${cv.hp}%`,sub:`${cv.hs}/${cv.hm} streaks`,color:'#4F8CFF',ico:'ti-flame'},
+    {lbl:'Tasks Done',val:`${cv.td}/${S.tasks.length}`,sub:`${cv.tp}% complete`,color:'#8B5CF6',ico:'ti-checks'},
+    {lbl:'Avg Progress',val:`${cv.ac}%`,sub:'across 5 courses',color:'#10B981',ico:'ti-chart-line'},
+    {lbl:'Focus Sessions',val:S.pomSessions,sub:`${S.pomSessions*25} min total`,color:'#F59E0B',ico:'ti-clock'}
+  ];
+  document.getElementById('stats-grid').innerHTML=items.map(s=>`
+    <div class="stat-card">
+      <div class="stat-glow" style="background:${s.color}"></div>
+      <div class="stat-body">
+        <div>
+          <div class="stat-lbl">${s.lbl}</div>
+          <div class="stat-val" style="color:${s.color}">${s.val}</div>
+          <div class="stat-sub">${s.sub}</div>
+        </div>
+        <div class="stat-ico" style="background:${s.color}22"><i class="ti ${s.ico}" style="color:${s.color}"></i></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderHabits(cv){
+  const days=['M','T','W','T','F','S','S'];
+  let h=`<div class="hab-hdr"><div class="hab-name-col"></div>${days.map(d=>`<div class="hab-day-h">${d}</div>`).join('')}</div>`;
+  S.habits.forEach(hab=>{
+    h+=`<div class="hab-row"><div class="hab-name-col"><span class="hab-ico">${hab.icon}</span><span class="hab-name">${hab.name}</span></div>
+    ${hab.days.map((done,di)=>`<div class="hab-cell-w"><div class="hab-cell${done?' done':''}" onclick="toggleHabit(${hab.id},${di})">${done?'<i class="ti ti-check"></i>':''}</div></div>`).join('')}</div>`;
+  });
+  document.getElementById('hab-grid').innerHTML=h;
+  document.getElementById('hab-ttl').textContent=`This Week — ${cv.hs}/${cv.hm}`;
+  document.getElementById('hab-bar').style.width=`${cv.hp}%`;
+  document.getElementById('hab-pct').textContent=`${cv.hp}% weekly completion`;
+}
+
+function renderPieSliders(){
+  document.getElementById('pie-sliders').innerHTML=PIE_KEYS.map(p=>`
+    <div class="pie-row">
+      <div class="pie-dot" style="background:${p.color}"></div>
+      <span class="pie-lbl">${p.label}</span>
+      <input type="range" min="0" max="60" step="1" value="${S.timeRatio[p.key]}" oninput="onTimeRatio('${p.key}',+this.value)" style="flex:1;accent-color:${p.color}">
+      <span class="pie-val" id="pv-${p.key}">${S.timeRatio[p.key]}h</span>
+    </div>`).join('');
+}
+
+function renderSchedBar(){
+  document.getElementById('sched-bar').innerHTML=SCHEDULE.map(s=>`
+    <div class="sched-blk" style="min-width:${Math.max(55,s.dur*55)}px;flex:${s.dur};background:${s.color}18;border:1px solid ${s.color}44">
+      <div class="sched-t" style="color:${s.color}">${s.time}</div>
+      <div class="sched-n">${s.label}</div>
+    </div>`).join('');
+}
+
+function renderSchedList(){
+  document.getElementById('sched-list').innerHTML=SCHEDULE.map(s=>`
+    <div class="sched-item" style="background:${s.color}0e;border:1px solid ${s.color}2e;border-left:3px solid ${s.color}">
+      <div class="sched-item-t" style="color:${s.color}">${s.time}</div>
+      <div class="sched-item-body"><div class="sched-item-name">${s.label}</div><div class="sched-item-dur">${s.dur}h</div></div>
+      <div class="sched-badge" style="color:${s.color};background:${s.color}20">${s.type}</div>
+    </div>`).join('');
+}
+
+function renderProgress(){
+  const cv=C();
+  // Courses
+  const cl=document.getElementById('courses-list');
+  if(cl) cl.innerHTML=S.courses.map(c=>`
+    <div class="course-item">
+      <div class="course-hdr">
+        <div><div class="course-name">${c.name}</div><div class="course-code">${c.code}</div></div>
+        <div class="course-right">
+          <input type="range" min="0" max="100" value="${c.progress}" oninput="onCourse(${c.id},+this.value)" style="width:72px;accent-color:${c.color}">
+          <span class="course-pct" style="color:${c.color}">${c.progress}%</span>
+        </div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${c.progress}%;background:linear-gradient(90deg,${c.color}88,${c.color})"></div></div>
+    </div>`).join('');
+  // Goals
+  const gg=document.getElementById('goals-grid');
+  if(gg) gg.innerHTML=S.goals.map((g,i)=>{
+    const pct=Math.round(g.current/g.max*100);
+    const col=GOAL_COLORS[i%GOAL_COLORS.length];
+    const circ=2*Math.PI*38;
+    return`<div class="goal-item">
+      <div class="goal-ring-wrap">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="38"/>
+          <circle class="ring-fill" cx="45" cy="45" r="38" stroke="${col}" stroke-dasharray="${pct/100*circ} ${circ}"/>
+        </svg>
+        <div class="goal-pct" style="color:${col}">${pct}%</div>
+      </div>
+      <div class="goal-name">${g.name}</div>
+      <div class="goal-cur">
+        <input type="number" min="0" max="${g.max}" value="${g.current}" oninput="onGoal(${g.id},+this.value)" style="color:${col};font-weight:800">
+        / ${g.max}
+      </div>
+    </div>`;
+  }).join('');
+  // Tasks
+  const tl=document.getElementById('task-list');
+  if(tl) tl.innerHTML=S.tasks.map(t=>`
+    <div class="task-item${t.done?' done':''}" style="border-left:3px solid ${PRIO_COLOR[t.priority]}">
+      <div class="task-chk${t.done?' checked':''}" onclick="toggleTask(${t.id})">${t.done?'<i class="ti ti-check"></i>':''}</div>
+      <span class="task-txt">${escHtml(t.text)}</span>
+      <span class="task-badge" style="color:${PRIO_COLOR[t.priority]};background:${PRIO_COLOR[t.priority]}18">${t.priority}</span>
+      <button class="task-del" onclick="deleteTask(${t.id})"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+  const tm=document.getElementById('task-meta');
+  if(tm) tm.textContent=`${cv.td}/${S.tasks.length} completed`;
+}
+
+function renderWorkspace(){
+  renderProfile();
+  renderMiniStats();
+}
+
+function renderProfile(){
+  const pn=document.getElementById('p-name'); if(pn) pn.value=S.profile.name;
+  const pt=document.getElementById('p-tagline'); if(pt) pt.value=S.profile.tagline;
+  const pb=document.getElementById('p-bio'); if(pb) pb.value=S.profile.bio;
+  renderLinks();
+}
+
+function renderLinks(){
+  const el=document.getElementById('p-links');
+  if(!el) return;
+  el.innerHTML=S.profile.links.map((l,i)=>`<input type="text" value="${escHtml(l)}" placeholder="https://..." style="margin-bottom:6px" oninput="onLink(${i},this.value)">`).join('');
+}
+
+function renderMiniStats(){
+  const cv=C();
+  const el=document.getElementById('mini-stats');
+  if(!el) return;
+  const items=[
+    {lbl:'Overall Score',val:cv.ov,color:'#4F8CFF'},
+    {lbl:'Consistency',val:`${cv.hp}%`,color:'#8B5CF6'},
+    {lbl:'Task Rate',val:`${cv.tp}%`,color:'#10B981'},
+    {lbl:'Focus Score',val:`${Math.min(100,S.pomSessions*10)}%`,color:'#F59E0B'}
+  ];
+  el.innerHTML=items.map(s=>`<div class="mini-stat"><div class="mini-lbl">${s.lbl}</div><div class="mini-val" style="color:${s.color}">${s.val}</div></div>`).join('');
+}
+
+function renderHeatmap(){
+  const el=document.getElementById('heatmap');
+  if(el) el.innerHTML=Array.from({length:84},(_,i)=>{
+    const o=(0.08+Math.abs(Math.sin(i*0.73+1.3))*0.9).toFixed(2);
+    return`<div class="heat-cell" style="opacity:${o}" title="Day ${i+1}: ${Math.round(o*100)}% productive"></div>`;
+  }).join('');
+  const ld=document.getElementById('heat-legend-dots');
+  if(ld) ld.innerHTML=[.1,.3,.55,.75,.95].map(o=>`<div class="heat-cell" style="opacity:${o}"></div>`).join('');
+}
+
+/* ─── POMODORO ─── */
+let pomInterval=null, pomTime=25*60, pomMode='work', pomRunning=false;
+const POM_WORK=25*60, POM_BREAK=5*60;
+
+function updatePomUI(){
+  const m=String(Math.floor(pomTime/60)).padStart(2,'0');
+  const s=String(pomTime%60).padStart(2,'0');
+  const dur=pomMode==='work'?POM_WORK:POM_BREAK;
+  const pct=Math.max(0,(1-pomTime/dur));
+  const circ=552.9;
+  document.getElementById('pom-time').textContent=`${m}:${s}`;
+  document.getElementById('pom-sess').textContent=`Session ${S.pomSessions+1}`;
+  document.getElementById('pom-mode-lbl').textContent=pomMode==='work'?'FOCUS SESSION':'BREAK TIME';
+  document.getElementById('pom-mode-lbl').style.color=pomMode==='work'?'#4F8CFF':'#10B981';
+  const btn=document.getElementById('pom-btn');
+  if(btn){
+    btn.textContent=pomRunning?'⏸ Pause':'▶ Start';
+    btn.className=`btn ${pomRunning?'btn-danger':'btn-accent'}`;
+  }
+  document.getElementById('pom-stat').textContent=`${S.pomSessions} sessions · ${S.pomSessions*25} min focused`;
+  const fill=document.getElementById('pom-fill');
+  if(fill){
+    fill.setAttribute('stroke-dasharray',`${pct*circ} ${circ}`);
+    fill.style.stroke=pomMode==='work'?'#4F8CFF':'#10B981';
+    fill.style.filter=`drop-shadow(0 0 10px ${pomMode==='work'?'rgba(79,140,255,.5)':'rgba(16,185,129,.5)'})`;
+  }
+  const dots=document.getElementById('pom-dots');
+  if(dots) dots.innerHTML=Array.from({length:Math.min(S.pomSessions,8)},()=>'<div class="pom-dot"></div>').join('');
+}
+
+function togglePom(){
+  pomRunning=!pomRunning;
+  if(pomRunning){
+    pomInterval=setInterval(()=>{
+      pomTime--;
+      if(pomTime<=0){
+        clearInterval(pomInterval); pomRunning=false;
+        S.pomSessions++; save('pomSessions');
+        pomMode=pomMode==='work'?'break':'work';
+        pomTime=pomMode==='work'?POM_WORK:POM_BREAK;
+        const cv=C(); renderStats(cv); renderMiniStats();
+      }
+      updatePomUI();
+    },1000);
+  } else { clearInterval(pomInterval); }
+  updatePomUI();
+}
+
+function resetPom(){ clearInterval(pomInterval); pomRunning=false; pomMode='work'; pomTime=POM_WORK; updatePomUI(); }
+function setPomPreset(min){ resetPom(); pomTime=min*60; updatePomUI(); }
+
+/* ─── ACTIONS ─── */
+function toggleHabit(id,di){
+  const h=S.habits.find(h=>h.id===id); if(!h) return;
+  h.days[di]=!h.days[di]; save('habits');
+  const cv=C(); renderHabits(cv); renderStats(cv);
+  setRing('score-fill',cv.ov,226.2); document.getElementById('score-lbl').textContent=cv.ov;
+}
+
+function toggleTask(id){
+  const t=S.tasks.find(t=>t.id===id); if(!t) return;
+  t.done=!t.done; save('tasks');
+  const cv=C(); renderProgress(); renderStats(cv);
+  setRing('score-fill',cv.ov,226.2); document.getElementById('score-lbl').textContent=cv.ov;
+}
+
+function deleteTask(id){ S.tasks=S.tasks.filter(t=>t.id!==id); save('tasks'); const cv=C(); renderProgress(); renderStats(cv); }
+
+function addTask(){
+  const inp=document.getElementById('task-inp');
+  const prio=document.getElementById('task-prio').value;
+  const text=inp.value.trim(); if(!text) return;
+  S.tasks.unshift({id:Date.now(),text,priority:prio,done:false});
+  inp.value=''; save('tasks'); const cv=C(); renderProgress(); renderStats(cv);
+}
+
+function onCourse(id,val){
+  const c=S.courses.find(c=>c.id===id); if(!c) return;
+  c.progress=val; save('courses'); renderProgress(); const cv=C(); renderStats(cv);
+  setRing('score-fill',cv.ov,226.2); document.getElementById('score-lbl').textContent=cv.ov;
+}
+
+function onGoal(id,val){
+  const g=S.goals.find(g=>g.id===id); if(!g) return;
+  g.current=Math.min(Math.max(0,val),g.max); save('goals'); renderProgress();
+}
+
+function onTimeRatio(key,val){
+  S.timeRatio[key]=val; save('timeRatio');
+  const el=document.getElementById('pv-'+key); if(el) el.textContent=`${val}h`;
+  updatePieChart();
+}
+
+function onProfileChange(){
+  S.profile.name=document.getElementById('p-name').value;
+  S.profile.tagline=document.getElementById('p-tagline').value;
+  S.profile.bio=document.getElementById('p-bio').value;
+  save('profile');
+  const cv=C(); renderHeader(cv); renderMiniStats(); updateRadar();
+}
+
+function onLink(i,val){ S.profile.links[i]=val; save('profile'); }
+
+function addLink(){ S.profile.links.push(''); save('profile'); renderLinks(); }
+
+/* ─── CLOCK ─── */
+function tick(){
+  const now=new Date();
+  document.getElementById('nav-time').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* ─── UTIL ─── */
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ─── INIT ─── */
+document.addEventListener('DOMContentLoaded',()=>{
+  loadState();
+  renderAll();
+  tick(); setInterval(tick,10000);
+  // Charts for tab 0
+  setTimeout(()=>{ initWeekly(); initPie(); chartsDone[0]=true; },150);
+  // Enter key on task input
+  document.getElementById('task-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
+});
 </script>
 </body>
 </html>
