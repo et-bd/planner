@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APEX — Productivity Dashboard</title>
+<title>ET-BD — Productivity Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
@@ -275,7 +275,7 @@ select option{background:var(--s2)}
   <div class="nav-inner">
     <div class="nav-logo">
       <div class="logo-icon"><i class="ti ti-bolt"></i></div>
-      <div><div class="logo-text">APEX</div><div class="logo-sub">Productivity OS</div></div>
+      <div><div class="logo-text">ET-BD</div><div class="logo-sub">Productivity OS</div></div>
     </div>
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="showTab(0)"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
@@ -297,7 +297,7 @@ select option{background:var(--s2)}
 <div class="tab-panel active" id="panel-0">
   <div class="dash-hdr">
     <div>
-      <div class="greet" id="greet-txt">Welcome to APEX 👋</div>
+      <div class="greet" id="greet-txt">Welcome to ET-BD 👋</div>
       <div class="tagline-txt" id="tagline-txt">Set up your profile to get started</div>
     </div>
     <div class="score-card">
@@ -530,7 +530,7 @@ select option{background:var(--s2)}
 </main>
 
 <footer class="footer">
-  <span>APEX Productivity OS · All data saved to your browser · <span id="footer-save-time"></span></span>
+  <span>ET-BD SERVER · All data saved to your browser & secure · <span id="footer-save-time"></span></span>
   <div class="footer-status"><div class="status-dot"></div><span>Auto-saved</span></div>
 </footer>
 
@@ -701,7 +701,7 @@ function renderHeader(cv){
   const h=parseInt(bdFmt({hour:'numeric',hour12:false}));
   const g=h<12?'Good Morning':'Good Afternoon';
   const g2=h>=18?'Good Evening':g;
-  document.getElementById('greet-txt').textContent=name?`${g2}, ${name.split(' ')[0]} 👋`:'Welcome to APEX 👋';
+  document.getElementById('greet-txt').textContent=name?`${g2}, ${name.split(' ')[0]} 👋`:'Welcome to ET-BD 👋';
   document.getElementById('tagline-txt').textContent=S.profile.tagline||'Set up your profile to get started';
   document.getElementById('score-lbl').textContent=cv.ov;
   setRing('score-fill',cv.ov,226.2);
